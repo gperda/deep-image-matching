@@ -142,7 +142,9 @@ class ImageMatcher:
         try:
             Extractor = extractor_loader(extractors, self.extraction)
         except AttributeError:
-            raise ValueError(f"Invalid local feature extractor. {self.extraction} is not supported.")
+            raise ValueError(
+                f"Invalid local feature extractor. {self.extraction} is not supported."
+            )
         self._extractor = Extractor(self.config)
 
         # Initialize matcher
@@ -165,7 +167,9 @@ class ImageMatcher:
         logger.info(f"  Tile selection: {self.config.general['tile_selection'].name}")
         logger.info(f"  Feature extraction method: {self.extraction}")
         logger.info(f"  Matching method: {self.matching}")
-        logger.info(f"  Geometric verification: {self.config.general['geom_verification'].name}")
+        logger.info(
+            f"  Geometric verification: {self.config.general['geom_verification'].name}"
+        )
         logger.info(f"  CUDA available: {torch.cuda.is_available()}")
 
     @property
@@ -220,7 +224,9 @@ class ImageMatcher:
                 raise FileExistsError(f"File {self.pair_file} does not exist")
 
             pairs = get_pairs_from_file(self.pair_file)
-            self.pairs = [(self.image_dir / im1, self.image_dir / im2) for im1, im2 in pairs]
+            self.pairs = [
+                (self.image_dir / im1, self.image_dir / im2) for im1, im2 in pairs
+            ]
 
         else:
             pairs_generator = PairsGenerator(
@@ -318,9 +324,13 @@ class ImageMatcher:
                     if rotation != 0:
                         _image1 = cv2.rotate(_image1, cv2rotation)
                     features["feat1"] = SPextractor._extract(_image1)
-                    matches = LGmatcher._match_pairs(features["feat0"], features["feat1"])
+                    matches = LGmatcher._match_pairs(
+                        features["feat0"], features["feat1"]
+                    )
                     matchesXrotation.append((rotation, matches.shape[0]))
-                index_of_max = max(range(len(matchesXrotation)), key=lambda i: matchesXrotation[i][1])
+                index_of_max = max(
+                    range(len(matchesXrotation)), key=lambda i: matchesXrotation[i][1]
+                )
                 n_matches = matchesXrotation[index_of_max][1]
                 if index_of_max != 0 and n_matches > 100:
                     processed_images.append(target_img)
@@ -390,8 +400,9 @@ class ImageMatcher:
         if not feature_path.exists():
             raise ValueError(f"Feature path {feature_path} does not exist")
 
-        # Define matches path
+        # Define matches and fundamental matrices path
         matches_path = feature_path.parent / "matches.h5"
+        fmat_path = feature_path.parent / "f_matrices.h5"
 
         # Match pairs
         logger.info("Matching features...")
@@ -408,6 +419,7 @@ class ImageMatcher:
             self._matcher.match(
                 feature_path=feature_path,
                 matches_path=matches_path,
+                fmat_path=fmat_path,
                 img0=im0,
                 img1=im1,
                 try_full_image=try_full_image,

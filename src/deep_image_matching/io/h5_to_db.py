@@ -44,6 +44,7 @@ def export_to_colmap(
     img_dir: Path,
     feature_path: Path,
     match_path: Path,
+    fmat_path: Path,
     database_path: str = "database.db",
     camera_config_path: Path = None,
 ):
@@ -102,6 +103,7 @@ def export_to_colmap(
         add_matches(
             db,
             match_path,
+            fmat_path,
             fname_to_id,
         )
 
@@ -211,11 +213,15 @@ def parse_camera_options(
                 try:
                     create_camera(db, path, cam_opt["camera_model"])
                 except:
-                    logger.warning(f"Was not possible to load the first image to initialize cam{camera}")
+                    logger.warning(
+                        f"Was not possible to load the first image to initialize cam{camera}"
+                    )
     return grouped_images
 
 
-def add_keypoints(db: Path, h5_path: Path, image_path: Path, camera_options: dict = {}) -> dict:
+def add_keypoints(
+    db: Path, h5_path: Path, image_path: Path, camera_options: dict = {}
+) -> dict:
     """
     Adds keypoints from an HDF5 file to a COLMAP database.
 
@@ -248,10 +254,14 @@ def add_keypoints(db: Path, h5_path: Path, image_path: Path, camera_options: dic
 
             if filename not in list(grouped_images.keys()):
                 if camera_options["general"]["single_camera"] is False:
-                    camera_id = create_camera(db, path, camera_options["general"]["camera_model"])
+                    camera_id = create_camera(
+                        db, path, camera_options["general"]["camera_model"]
+                    )
                 elif camera_options["general"]["single_camera"] is True:
                     if k == 0:
-                        camera_id = create_camera(db, path, camera_options["general"]["camera_model"])
+                        camera_id = create_camera(
+                            db, path, camera_options["general"]["camera_model"]
+                        )
                         single_camera_id = camera_id
                         k += 1
                     elif k > 0:
@@ -313,8 +323,9 @@ def add_raw_matches(db: Path, h5_path: Path, fname_to_id: dict):
     match_file.close()
 
 
-def add_matches(db, h5_path, fname_to_id):
+def add_matches(db, h5_path, fmat_path, fname_to_id):
     match_file = h5py.File(str(h5_path), "r")
+    fmat_file = h5py.File(str(fmat_path), "r")
 
     added = set()
     n_keys = len(match_file.keys())
@@ -323,6 +334,7 @@ def add_matches(db, h5_path, fname_to_id):
     with tqdm(total=n_total) as pbar:
         for key_1 in match_file.keys():
             group = match_file[key_1]
+            group2 = fmat_file[key_1]
             for key_2 in group.keys():
                 id_1 = fname_to_id[key_1]
                 id_2 = fname_to_id[key_2]
@@ -333,18 +345,22 @@ def add_matches(db, h5_path, fname_to_id):
                     continue
 
                 matches = group[key_2][()]
+                F = group2[key_2][()]
                 # db.add_matches(id_1, id_2, matches)
-                db.add_two_view_geometry(id_1, id_2, matches)
+                db.add_two_view_geometry(id_1, id_2, matches, F)
 
                 added.add(pair_id)
 
                 pbar.update(1)
     match_file.close()
+    fmat_file.close()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("h5_path", help=("Path to the directory with " "keypoints.h5 and matches.h5"))
+    parser.add_argument(
+        "h5_path", help=("Path to the directory with " "keypoints.h5 and matches.h5")
+    )
     parser.add_argument("image_path", help="Path to source images")
     parser.add_argument(
         "--image-extension",

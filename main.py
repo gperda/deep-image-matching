@@ -22,10 +22,12 @@ feature_path, match_path = matcher.run()
 
 # Export in colmap format
 database_path = output_dir / "database.db"
+fmat_path = output_dir / "f_matrices.h5"
 dim.io.export_to_colmap(
     img_dir=imgs_dir,
     feature_path=feature_path,
     match_path=match_path,
+    fmat_path=fmat_path,
     database_path=database_path,
     camera_config_path=config.general["camera_options"],
 )
@@ -89,7 +91,11 @@ if not config.general["skip_reconstruction"]:
         #     },
         # )
         reconst_opts = {}
-        refine_intrinsics = config.general["refine_intrinsics"] if "refine_intrinsics" in config.general else True
+        refine_intrinsics = (
+            config.general["refine_intrinsics"]
+            if "refine_intrinsics" in config.general
+            else True
+        )
 
         # Run reconstruction
         model = reconstruction.pycolmap_reconstruction(
