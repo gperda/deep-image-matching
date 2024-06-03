@@ -18,11 +18,10 @@ output_dir = config.general["output_dir"]
 matcher = dim.ImageMatcher(config)
 
 # Run image matching
-feature_path, match_path = matcher.run()
+feature_path, match_path, fmat_path = matcher.run()
 
 # Export in colmap format
 database_path = output_dir / "database.db"
-fmat_path = output_dir / "f_matrices.h5"
 dim.io.export_to_colmap(
     img_dir=imgs_dir,
     feature_path=feature_path,

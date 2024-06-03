@@ -44,12 +44,18 @@ def create_config_file(config: dict, path: Path) -> Path:
 
 # Test matching strategies
 def test_sp_lg_bruteforce(data_dir):
-    prm = {"dir": data_dir, "pipeline": "superpoint+lightglue", "strategy": "bruteforce", "skip_reconstruction": True}
+    prm = {
+        "dir": data_dir,
+        "pipeline": "superpoint+lightglue",
+        "strategy": "bruteforce",
+        "skip_reconstruction": True,
+    }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_sp_lg_sequential(data_dir):
@@ -62,9 +68,10 @@ def test_sp_lg_sequential(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_sp_lg_matching_lowres(data_dir):
@@ -76,9 +83,10 @@ def test_sp_lg_matching_lowres(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 # Test using a custom configuration file
@@ -101,16 +109,19 @@ def test_sp_lg_custom_config(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
     config_file.unlink()
 
 
 # Test pycolmap reconstruction
 def test_pycolmap(data_dir):
     if platform.system() == "Windows":
-        pytest.skip("Pycolmap is not available on Windows. Please use WSL or Docker to run this test.")
+        pytest.skip(
+            "Pycolmap is not available on Windows. Please use WSL or Docker to run this test."
+        )
     prm = {
         "dir": data_dir,
         "pipeline": "superpoint+lightglue",
@@ -120,11 +131,12 @@ def test_pycolmap(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     dim.io.export_to_colmap(
         img_dir=config.general["image_dir"],
         feature_path=feature_path,
         match_path=match_path,
+        fmat_path=fmat_path,
         database_path=config.general["output_dir"] / "database.db",
         camera_config_path=config.general["camera_options"],
     )
@@ -136,6 +148,7 @@ def test_pycolmap(data_dir):
     )
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
     assert model is not None
 
 
@@ -150,8 +163,9 @@ def test_sp_lg_quality_medium(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
+    assert fmat_path.exists()
     assert match_path.exists()
 
 
@@ -168,9 +182,10 @@ def test_tiling_preselection(data_dir, config_file_tiling):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
     config_file_tiling.unlink()
 
 
@@ -186,9 +201,10 @@ def test_tiling_grid(data_dir, config_file_tiling):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
     config_file_tiling.unlink()
 
 
@@ -204,9 +220,10 @@ def test_tiling_exhaustive(data_dir, config_file_tiling):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
     config_file_tiling.unlink()
 
 
@@ -221,9 +238,10 @@ def test_disk_lg(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_aliked_lg(data_dir):
@@ -236,9 +254,10 @@ def test_aliked_lg(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_orb(data_dir):
@@ -251,9 +270,10 @@ def test_orb(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_sift(data_dir):
@@ -266,9 +286,10 @@ def test_sift(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_keynet(data_dir):
@@ -281,9 +302,10 @@ def test_keynet(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_dedode_nn(data_dir):
@@ -298,9 +320,10 @@ def test_dedode_nn(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 # Test semi-dense matchers
@@ -314,9 +337,10 @@ def test_loftr(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_roma(data_dir):
@@ -331,9 +355,10 @@ def test_roma(data_dir):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
 
 
 def test_roma_tiling(data_dir, config_file_tiling):
@@ -349,9 +374,10 @@ def test_roma_tiling(data_dir, config_file_tiling):
     }
     config = dim.Config(prm)
     matcher = dim.ImageMatcher(config)
-    feature_path, match_path = matcher.run()
+    feature_path, match_path, fmat_path = matcher.run()
     assert feature_path.exists()
     assert match_path.exists()
+    assert fmat_path.exists()
     config_file_tiling.unlink()
 
 

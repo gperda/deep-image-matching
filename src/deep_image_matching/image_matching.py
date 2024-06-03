@@ -200,7 +200,7 @@ class ImageMatcher:
         timer.update("extract_features")
 
         # Matching
-        match_path = self.match_pairs(feature_path)
+        match_path, fmat_path = self.match_pairs(feature_path)
 
         # If features have been extracted on "upright" images, this function bring features back to their original image orientation
         if self.config.general["upright"]:
@@ -210,7 +210,7 @@ class ImageMatcher:
         # Print timing
         timer.print("Deep Image Matching")
 
-        return feature_path, match_path
+        return feature_path, match_path, fmat_path
 
     def generate_pairs(self, **kwargs) -> Path:
         """
@@ -386,6 +386,7 @@ class ImageMatcher:
 
         Returns:
             Path: The path to the directory containing the matches.
+            Path: The path to the directory containing the fundamental matrices file.
 
         Raises:
             ValueError: If the feature path does not exist.
@@ -431,7 +432,7 @@ class ImageMatcher:
         torch.cuda.empty_cache()
         timer.print("matching")
 
-        return matches_path
+        return matches_path, fmat_path
 
     def rotate_back_features(self, feature_path: Path) -> None:
         """
